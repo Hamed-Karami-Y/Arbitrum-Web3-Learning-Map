@@ -1,0 +1,6 @@
+{
+  "name": "Arbitrum Web3 Learning Map",
+  "description": "An interactive onchain learning journey from zero Web3 knowledge to verified Arbitrum Sepolia mastery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

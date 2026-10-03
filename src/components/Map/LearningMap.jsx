@@ -35,21 +35,26 @@ export function LearningMap() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-800/40">
-                <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '10s' }} />
-                Interactive World Map
-              </span>
-              <span className="text-xs text-slate-400 hidden sm:inline">•</span>
-              <span className="text-xs text-slate-400 hidden sm:inline font-mono">Arbitrum Sepolia Testnet</span>
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden shadow-xl shadow-orange-500/20 ring-1 ring-orange-500/40 bg-slate-900 p-1">
+              <img src="/logo.png" alt="Arbitrum Web3 Learning Map Logo" className="w-full h-full object-contain rounded-xl" />
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white mb-2">
-              The Onchain Odyssey
-            </h1>
-            <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-              Explore interconnected Web3 domains. Master cryptographic foundations in the Sandbox, execute live Arbitrum transactions, and earn verified XP.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-800/40">
+                  <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '10s' }} />
+                  Interactive World Map
+                </span>
+                <span className="text-xs text-slate-400 hidden sm:inline">•</span>
+                <span className="text-xs text-slate-400 hidden sm:inline font-mono">Arbitrum Sepolia Testnet</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                The Onchain Odyssey
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed mt-1">
+                Explore interconnected Web3 domains. Master cryptographic foundations in the Sandbox, execute live Arbitrum transactions, and earn verified XP.
+              </p>
+            </div>
           </div>
 
           {/* Quick Resume Current Objective */}

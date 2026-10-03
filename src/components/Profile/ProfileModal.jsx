@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useLearning } from '../../context/LearningContext.jsx';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { UserAvatar } from '../Common/UserAvatar.jsx';
 
 export function ProfileModal() {
   const { address, isConnected, chain } = useAccount();
@@ -73,9 +74,7 @@ export function ProfileModal() {
       {/* Profile Header Card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/30 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 font-bold font-mono text-xl">
-            {address ? address.slice(2, 4).toUpperCase() : "XP"}
-          </div>
+          <UserAvatar address={address} size="lg" />
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-white">

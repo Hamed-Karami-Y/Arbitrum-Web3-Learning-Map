@@ -35,15 +35,20 @@ export function SettingsModal() {
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 text-left">
       
       {/* Header Banner */}
-      <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-            <Settings className="w-5 h-5 text-cyan-400" />
-            <span>Platform Configuration & Network</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Arbitrum Web3 Learning Map • {APP_CONFIG.version} ({APP_CONFIG.buildTarget})
-          </p>
+      <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-orange-500/20 ring-1 ring-orange-500/40 bg-slate-900 p-1">
+            <img src="/logo.png" alt="Arbitrum Web3 Learning Map Logo" className="w-full h-full object-contain rounded-xl" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <Settings className="w-5 h-5 text-cyan-400" />
+              <span>Platform Configuration & Network</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Arbitrum Web3 Learning Map • {APP_CONFIG.version} ({APP_CONFIG.buildTarget})
+            </p>
+          </div>
         </div>
       </div>
 

@@ -52,8 +52,8 @@ export function StageGraduation({ stage }) {
       
       {/* Hero Graduation Card */}
       <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950 border-2 border-cyan-400/40 relative overflow-hidden shadow-2xl text-center space-y-4">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25">
-          <GraduationCap className="w-9 h-9" />
+        <div className="w-20 h-20 mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-orange-500/30 ring-2 ring-orange-500/40 p-1 bg-slate-900">
+          <img src="/logo.png" alt="Arbitrum Web3 Learning Map Logo" className="w-full h-full object-contain rounded-2xl" />
         </div>
 
         <div>

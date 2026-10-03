@@ -4,18 +4,21 @@
 import React from 'react';
 import { createConfig, http, WagmiProvider as WagmiCoreProvider } from 'wagmi';
 import { arbitrumSepolia } from 'viem/chains';
-import { injected, metaMask } from 'wagmi/connectors';
+import { injected } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export const config = createConfig({
   chains: [arbitrumSepolia],
+  multiInjectedProviderDiscovery: false,
   connectors: [
-    injected(),
-    metaMask({
-      dappMetadata: {
-        name: 'Arbitrum Web3 Learning Map',
-        url: window.location.origin,
-      },
+    // 1. Original standard Injected connector (connects directly to window.ethereum)
+    injected({
+      shimDisconnect: true,
+    }),
+    // 2. Direct MetaMask browser extension connector
+    injected({
+      target: 'metaMask',
+      shimDisconnect: true,
     }),
   ],
   transports: {

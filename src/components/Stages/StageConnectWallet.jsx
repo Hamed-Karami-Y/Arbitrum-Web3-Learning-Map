@@ -1,7 +1,7 @@
 // src/components/Stages/StageConnectWallet.jsx
 // Stage 1: Connect Wallet - Non-custodial connection via Wagmi & Viem
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance } from 'wagmi';
 import { arbitrumSepolia } from 'viem/chains';
 import { 
@@ -19,7 +19,7 @@ import { ARBITRUM_SEPOLIA_CHAIN_ID } from '../../config/chain.js';
 
 export function StageConnectWallet({ stage }) {
   const { address, isConnected, chain, isConnecting } = useAccount();
-  const { connectors, connect, error: connectError } = useConnect();
+  const { connectors, connect, isPending, variables, error: connectError } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain, error: switchError } = useSwitchChain();
   const { data: balanceData, isLoading: isBalanceLoading, refetch: refetchBalance } = useBalance({
@@ -31,6 +31,21 @@ export function StageConnectWallet({ stage }) {
   const completed = isStageCompleted(stage.id);
 
   const isArbitrumSepolia = isConnected && chain?.id === ARBITRUM_SEPOLIA_CHAIN_ID;
+
+  // Deduplicate connectors so each wallet appears exactly once
+  const uniqueConnectors = useMemo(() => {
+    const seen = new Set();
+    const result = [];
+    for (const connector of connectors) {
+      const norm = (connector.name || connector.id || '').toLowerCase().trim();
+      const key = norm.includes('metamask') ? 'metamask' : norm;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(connector);
+      }
+    }
+    return result;
+  }, [connectors]);
 
   const handleVerify = () => {
     if (!isConnected || !isArbitrumSepolia) return;
@@ -79,37 +94,65 @@ export function StageConnectWallet({ stage }) {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {connectors.map(connector => (
-                <button
-                  key={connector.uid}
-                  onClick={() => connect({ connector, chainId: arbitrumSepolia.id })}
-                  disabled={isConnecting}
-                  className="p-3.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between text-left transition-all group active:scale-98"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-cyan-400 flex items-center justify-center font-bold text-xs">
-                      {connector.name[0]}
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white group-hover:text-cyan-300">
-                        {connector.name}
+              {uniqueConnectors.map(connector => {
+                const isMetaMask = connector.id === 'metaMask' || connector.name.toLowerCase().includes('metamask');
+                const isThisPending = isPending && variables?.connector?.uid === connector.uid;
+
+                return (
+                  <button
+                    key={connector.uid}
+                    onClick={() => connect({ connector, chainId: arbitrumSepolia.id })}
+                    disabled={isConnecting || isPending}
+                    className={`p-3.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border ${
+                      isMetaMask 
+                        ? 'border-orange-500/30 hover:border-orange-500/70 hover:shadow-lg hover:shadow-orange-500/10' 
+                        : 'border-slate-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10'
+                    } flex items-center justify-between text-left transition-all group active:scale-98`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                        isMetaMask ? 'bg-orange-500/20 text-orange-400 text-sm' : 'bg-blue-600/20 text-cyan-400'
+                      }`}>
+                        {isMetaMask ? '🦊' : connector.name[0]}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono">
-                        EIP-1193 Provider
+                      <div>
+                        <div className="text-xs font-bold text-white group-hover:text-cyan-300 flex items-center gap-1.5">
+                          <span>{connector.name}</span>
+                          {isMetaMask && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] bg-orange-500/20 text-orange-300 font-normal">
+                              Extension
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          {isMetaMask ? 'MetaMask Injected Extension' : 'EIP-1193 Provider'}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <span className="text-xs text-cyan-400 font-semibold group-hover:translate-x-1 transition-transform">
-                    Connect →
-                  </span>
-                </button>
-              ))}
+                    <span className="text-xs text-cyan-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1.5">
+                      {isThisPending ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                          <span>Connecting...</span>
+                        </>
+                      ) : (
+                        <span>Connect →</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {connectError && (
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-xs text-red-300 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-                <span>{connectError.message || "Connection rejected by user."}</span>
+              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 text-xs text-red-300 space-y-1">
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                  <span>{connectError.message || "Connection failed or rejected."}</span>
+                </div>
+                <p className="text-[11px] text-red-400/80 pl-6">
+                  Tip: Check your MetaMask extension icon in the browser toolbar to approve or unlock pending requests.
+                </p>
               </div>
             )}
           </div>

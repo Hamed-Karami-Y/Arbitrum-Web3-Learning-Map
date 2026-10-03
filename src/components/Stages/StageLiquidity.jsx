@@ -18,6 +18,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageLiquidity({ stage }) {
   const { address, isConnected } = useAccount();
@@ -80,6 +81,8 @@ export function StageLiquidity({ stage }) {
         abi: CONTRACT_ABIS.SimpleAMM,
         functionName: 'addLiquidity',
         args: [parseUnits(amountA, 18), parseUnits(amountB, 18), 1n],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

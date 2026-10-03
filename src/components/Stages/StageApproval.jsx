@@ -19,6 +19,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageApproval({ stage }) {
   const { address, isConnected } = useAccount();
@@ -71,6 +72,8 @@ export function StageApproval({ stage }) {
         abi: CONTRACT_ABIS.LearnToken,
         functionName: 'approve',
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amountToApprove, 18)],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

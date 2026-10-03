@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { createConfig, http, WagmiProvider as WagmiCoreProvider } from 'wagmi';
-import { arbitrumSepolia } from 'viem/chains';
+import { arbitrumSepolia } from '../config/chain.js';
 import { injected } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 

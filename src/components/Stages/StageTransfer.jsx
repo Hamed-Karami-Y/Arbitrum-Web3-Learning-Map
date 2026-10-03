@@ -17,6 +17,7 @@ import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '../../config/contracts.js';
 import { DEMO_RECIPIENTS } from '../../config/demoAddresses.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageTransfer({ stage }) {
   const { address, isConnected } = useAccount();
@@ -72,6 +73,8 @@ export function StageTransfer({ stage }) {
         abi: CONTRACT_ABIS.LearnToken,
         functionName: 'transfer',
         args: [recipient, parseUnits(amount, 18)],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

@@ -16,6 +16,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageAchievementNFT({ stage }) {
   const { address, isConnected } = useAccount();
@@ -73,6 +74,8 @@ export function StageAchievementNFT({ stage }) {
         address: CONTRACT_ADDRESSES.AchievementNFT,
         abi: CONTRACT_ABIS.AchievementNFT,
         functionName: 'mintAchievement',
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

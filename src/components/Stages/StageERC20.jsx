@@ -18,6 +18,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageERC20({ stage }) {
   const { address, isConnected } = useAccount();
@@ -77,6 +78,8 @@ export function StageERC20({ stage }) {
         address: CONTRACT_ADDRESSES.LearnToken,
         abi: CONTRACT_ABIS.LearnToken,
         functionName: 'claimFaucet',
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

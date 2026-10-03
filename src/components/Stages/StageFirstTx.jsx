@@ -17,6 +17,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { DEMO_RECIPIENTS } from '../../config/demoAddresses.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageFirstTx({ stage }) {
   const { address, isConnected } = useAccount();
@@ -65,6 +66,8 @@ export function StageFirstTx({ stage }) {
       sendTransaction({
         to: recipient,
         value: parseEther(amount),
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
       setTxSubmitted(true);
     } catch (e) {

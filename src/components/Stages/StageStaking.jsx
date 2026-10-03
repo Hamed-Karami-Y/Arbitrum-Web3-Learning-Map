@@ -19,6 +19,7 @@ import {
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
 import { ExplorerLink } from '../Common/ExplorerLink.jsx';
+import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageStaking({ stage }) {
   const { address, isConnected } = useAccount();
@@ -71,6 +72,8 @@ export function StageStaking({ stage }) {
         abi: CONTRACT_ABIS.StakingLab,
         functionName: 'stake',
         args: [parseUnits(stakeAmount, 18)],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);
@@ -83,6 +86,8 @@ export function StageStaking({ stage }) {
         address: CONTRACT_ADDRESSES.StakingLab,
         abi: CONTRACT_ABIS.StakingLab,
         functionName: 'claimReward',
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);
@@ -97,6 +102,8 @@ export function StageStaking({ stage }) {
         abi: CONTRACT_ABIS.StakingLab,
         functionName: 'unstake',
         args: [stakeInfo[0]],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
       });
     } catch (e) {
       console.error(e);

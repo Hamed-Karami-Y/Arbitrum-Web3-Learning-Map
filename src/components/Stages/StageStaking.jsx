@@ -14,7 +14,9 @@ import {
   Lock,
   Unlock,
   Coins,
-  RefreshCw
+  RefreshCw,
+  KeyRound,
+  ArrowRight
 } from 'lucide-react';
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
@@ -27,8 +29,9 @@ export function StageStaking({ stage }) {
   const completed = isStageCompleted(stage.id);
 
   const [stakeAmount, setStakeAmount] = useState("50");
+  const [actionType, setActionType] = useState(null); // 'approve' | 'stake' | 'claim' | 'unstake'
 
-  // Read stake info
+  // 1. Read user's staked info from StakingLab
   const { data: stakeInfo, refetch: refetchStake } = useReadContract({
     address: CONTRACT_ADDRESSES.StakingLab,
     abi: CONTRACT_ABIS.StakingLab,
@@ -36,12 +39,29 @@ export function StageStaking({ stage }) {
     args: address ? [address] : undefined,
   });
 
+  // 2. Read user's LEARN balance
+  const { data: balance, refetch: refetchBalance } = useReadContract({
+    address: CONTRACT_ADDRESSES.LearnToken,
+    abi: CONTRACT_ABIS.LearnToken,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+  });
+
+  // 3. Read user's allowance of LEARN for StakingLab
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+    address: CONTRACT_ADDRESSES.LearnToken,
+    abi: CONTRACT_ABIS.LearnToken,
+    functionName: 'allowance',
+    args: address ? [address, CONTRACT_ADDRESSES.StakingLab] : undefined,
+  });
+
   // Write contract hook
   const { 
     writeContract, 
     data: txHash, 
     isPending: isAwaitingSignature, 
-    error: stakeError 
+    error: stakeError,
+    reset: resetWrite
   } = useWriteContract();
 
   const { 
@@ -55,18 +75,51 @@ export function StageStaking({ stage }) {
   useEffect(() => {
     if (isConfirmed && txHash) {
       refetchStake();
-      completeStage(stage.id, {
-        hash: txHash,
-        type: `Staking Action on StakingLab`,
-        blockNumber: receipt?.blockNumber?.toString() || "",
-        status: "Confirmed"
-      });
+      refetchBalance();
+      refetchAllowance();
+
+      if (actionType === 'stake') {
+        completeStage(stage.id, {
+          hash: txHash,
+          type: `Staked ${stakeAmount} LEARN in StakingLab`,
+          amount: `${stakeAmount} LEARN`,
+          blockNumber: receipt?.blockNumber?.toString() || "",
+          status: "Confirmed"
+        });
+      }
+      setActionType(null);
     }
   }, [isConfirmed, txHash]);
 
-  const handleStake = () => {
-    if (!stakeAmount) return;
+  const currentAllowance = allowance ? parseFloat(formatUnits(allowance, 18)) : 0;
+  const userBalance = balance ? parseFloat(formatUnits(balance, 18)) : 0;
+  const stakeAmountNum = parseFloat(stakeAmount || "0");
+  const needsApproval = currentAllowance < stakeAmountNum;
+
+  // Step 1: Approve StakingLab to spend LEARN
+  const handleApprove = () => {
+    if (!stakeAmount || stakeAmountNum <= 0) return;
     try {
+      setActionType('approve');
+      writeContract({
+        address: CONTRACT_ADDRESSES.LearnToken,
+        abi: CONTRACT_ABIS.LearnToken,
+        functionName: 'approve',
+        args: [CONTRACT_ADDRESSES.StakingLab, parseUnits(stakeAmount, 18)],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+      });
+    } catch (e) {
+      console.error(e);
+      setActionType(null);
+    }
+  };
+
+  // Step 2: Deposit into StakingLab
+  const handleStake = () => {
+    if (!stakeAmount || stakeAmountNum <= 0 || needsApproval) return;
+    try {
+      setActionType('stake');
       writeContract({
         address: CONTRACT_ADDRESSES.StakingLab,
         abi: CONTRACT_ABIS.StakingLab,
@@ -77,11 +130,13 @@ export function StageStaking({ stage }) {
       });
     } catch (e) {
       console.error(e);
+      setActionType(null);
     }
   };
 
   const handleClaim = () => {
     try {
+      setActionType('claim');
       writeContract({
         address: CONTRACT_ADDRESSES.StakingLab,
         abi: CONTRACT_ABIS.StakingLab,
@@ -91,12 +146,14 @@ export function StageStaking({ stage }) {
       });
     } catch (e) {
       console.error(e);
+      setActionType(null);
     }
   };
 
   const handleUnstake = () => {
     if (!stakeInfo || stakeInfo[0] === 0n) return;
     try {
+      setActionType('unstake');
       writeContract({
         address: CONTRACT_ADDRESSES.StakingLab,
         abi: CONTRACT_ABIS.StakingLab,
@@ -107,6 +164,7 @@ export function StageStaking({ stage }) {
       });
     } catch (e) {
       console.error(e);
+      setActionType(null);
     }
   };
 
@@ -125,7 +183,8 @@ export function StageStaking({ stage }) {
             DeFi Staking & Yield Mechanics
           </div>
           <p className="text-slate-300 leading-relaxed">
-            Staking contracts lock your tokens in return for programmatic rewards distributed per block or second. Note: <strong>Simulation / Educational Testnet Reward</strong> with zero real monetary value.
+            Staking contracts lock your tokens in return for programmatic rewards calculated continuously per block.
+            Like all DeFi deposit vaults, staking is a <strong>two-step process</strong>: first grant permission via <code>approve()</code>, then deposit via <code>stake()</code>.
           </p>
         </div>
       </div>
@@ -137,7 +196,10 @@ export function StageStaking({ stage }) {
             <Sparkles className="w-4 h-4 text-cyan-400" />
             <span>Staking Lab Vault</span>
           </h4>
-          <button onClick={() => refetchStake()} className="text-slate-400 hover:text-cyan-400">
+          <button 
+            onClick={() => { refetchStake(); refetchBalance(); refetchAllowance(); }} 
+            className="text-slate-400 hover:text-cyan-400 transition-colors"
+          >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -162,8 +224,21 @@ export function StageStaking({ stage }) {
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Balance & Allowance Indicators */}
+        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+          <span className="text-slate-400">
+            Wallet Balance: <strong className="text-cyan-300">{userBalance.toLocaleString()} LEARN</strong>
+          </span>
+          <span className="text-slate-400">
+            StakingLab Allowance: <strong className={currentAllowance >= stakeAmountNum && stakeAmountNum > 0 ? "text-emerald-400" : "text-amber-400"}>
+              {currentAllowance.toLocaleString()} LEARN
+            </strong>
+          </span>
+        </div>
+
+        {/* 2-Step Action Pipeline */}
         <div className="pt-2 space-y-3">
+          <label className="text-xs text-slate-400 block">Stake Amount</label>
           <div className="flex gap-2">
             <input
               type="number"
@@ -174,29 +249,65 @@ export function StageStaking({ stage }) {
               placeholder="50"
               min="1"
             />
-            <button
-              onClick={handleStake}
-              disabled={!isConnected || isAwaitingSignature || isPendingBroadcast}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isAwaitingSignature ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin" />
-                  <span>Confirm stake() in Wallet...</span>
-                </>
-              ) : isPendingBroadcast ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin text-amber-300" />
-                  <span>Locking Tokens in StakingLab...</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="w-4 h-4" />
-                  <span>Stake {stakeAmount} LEARN</span>
-                </>
-              )}
-            </button>
+
+            {/* Step 1: Approve Button (shown if allowance is insufficient) */}
+            {needsApproval ? (
+              <button
+                onClick={handleApprove}
+                disabled={!isConnected || isAwaitingSignature || isPendingBroadcast || stakeAmountNum <= 0}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAwaitingSignature && actionType === 'approve' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Confirm Approval in Wallet...</span>
+                  </>
+                ) : isPendingBroadcast && actionType === 'approve' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Confirming Approval on Arbitrum...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Step 1: Approve {stakeAmount} LEARN</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              /* Step 2: Stake Button (unlocked once approved) */
+              <button
+                onClick={handleStake}
+                disabled={!isConnected || isAwaitingSignature || isPendingBroadcast || stakeAmountNum <= 0}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAwaitingSignature && actionType === 'stake' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin" />
+                    <span>Confirm stake() in Wallet...</span>
+                  </>
+                ) : isPendingBroadcast && actionType === 'stake' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-amber-300" />
+                    <span>Locking Tokens in StakingLab...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Step 2: Stake {stakeAmount} LEARN</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
+
+          {/* Explain Why Approval Was Needed */}
+          {needsApproval && (
+            <div className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-200/90 flex items-center gap-2 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+              <span>Approval grants StakingLab permission to pull {stakeAmount} LEARN. Prevents contract revert and gas spikes.</span>
+            </div>
+          )}
 
           {/* Claim and Unstake secondary controls */}
           {stakedAmount > 0 && (

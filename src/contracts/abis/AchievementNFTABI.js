@@ -73,6 +73,26 @@ export const AchievementNFTABI = [
     "stateMutability": "view"
   },
   {
+    "type": "function",
+    "name": "setApprovalForAll",
+    "inputs": [
+      { "name": "operator", "type": "address" },
+      { "name": "approved", "type": "bool" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "isApprovedForAll",
+    "inputs": [
+      { "name": "owner", "type": "address" },
+      { "name": "operator", "type": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
     "type": "event",
     "name": "AchievementMinted",
     "inputs": [

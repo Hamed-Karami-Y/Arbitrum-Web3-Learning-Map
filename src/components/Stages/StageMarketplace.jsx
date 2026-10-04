@@ -9,11 +9,13 @@ import {
   CheckCircle2, 
   Clock, 
   AlertCircle, 
-  ExternalLink,
-  ShieldCheck,
-  Tag,
-  Coins,
-  XCircle
+  ExternalLink, 
+  ShieldCheck, 
+  Tag, 
+  Coins, 
+  XCircle,
+  KeyRound,
+  RefreshCw
 } from 'lucide-react';
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
@@ -27,6 +29,7 @@ export function StageMarketplace({ stage }) {
 
   const [tokenId, setTokenId] = useState("1");
   const [listPrice, setListPrice] = useState("50");
+  const [actionType, setActionType] = useState(null); // 'approve' | 'list' | 'cancel'
 
   // Read listing for Token #1
   const { data: listingData, refetch: refetchListing } = useReadContract({
@@ -34,6 +37,22 @@ export function StageMarketplace({ stage }) {
     abi: CONTRACT_ABIS.SimpleMarketplace,
     functionName: 'getListing',
     args: [BigInt(tokenId || "1")],
+  });
+
+  // Check if NFT is approved for Marketplace
+  const { data: isApprovedForAll, refetch: refetchApproval } = useReadContract({
+    address: CONTRACT_ADDRESSES.AchievementNFT,
+    abi: CONTRACT_ABIS.AchievementNFT,
+    functionName: 'isApprovedForAll',
+    args: address ? [address, CONTRACT_ADDRESSES.SimpleMarketplace] : undefined,
+  });
+
+  // Check user NFT balance
+  const { data: userNftBalance, refetch: refetchNftBal } = useReadContract({
+    address: CONTRACT_ADDRESSES.AchievementNFT,
+    abi: CONTRACT_ABIS.AchievementNFT,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
   });
 
   // Write contract hook
@@ -55,17 +74,40 @@ export function StageMarketplace({ stage }) {
   useEffect(() => {
     if (isConfirmed && txHash) {
       refetchListing();
-      completeStage(stage.id, {
-        hash: txHash,
-        type: `Marketplace Trade Action`,
-        blockNumber: receipt?.blockNumber?.toString() || "",
-        status: "Confirmed"
-      });
+      refetchApproval();
+      refetchNftBal();
+      if (actionType === 'list') {
+        completeStage(stage.id, {
+          hash: txHash,
+          type: `Marketplace Listing Created (#${tokenId} for ${listPrice} LUSD)`,
+          blockNumber: receipt?.blockNumber?.toString() || "",
+          status: "Confirmed"
+        });
+      }
+      setActionType(null);
     }
   }, [isConfirmed, txHash]);
 
+  const handleApproveNFT = () => {
+    try {
+      setActionType('approve');
+      writeContract({
+        address: CONTRACT_ADDRESSES.AchievementNFT,
+        abi: CONTRACT_ABIS.AchievementNFT,
+        functionName: 'setApprovalForAll',
+        args: [CONTRACT_ADDRESSES.SimpleMarketplace, true],
+        maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
+        maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+      });
+    } catch (e) {
+      console.error(e);
+      setActionType(null);
+    }
+  };
+
   const handleList = () => {
     try {
+      setActionType('list');
       writeContract({
         address: CONTRACT_ADDRESSES.SimpleMarketplace,
         abi: CONTRACT_ABIS.SimpleMarketplace,
@@ -76,11 +118,13 @@ export function StageMarketplace({ stage }) {
       });
     } catch (e) {
       console.error(e);
+      setActionType(null);
     }
   };
 
   const handleCancel = () => {
     try {
+      setActionType('cancel');
       writeContract({
         address: CONTRACT_ADDRESSES.SimpleMarketplace,
         abi: CONTRACT_ABIS.SimpleMarketplace,
@@ -91,6 +135,7 @@ export function StageMarketplace({ stage }) {
       });
     } catch (e) {
       console.error(e);
+      setActionType(null);
     }
   };
 
@@ -98,6 +143,7 @@ export function StageMarketplace({ stage }) {
   const sellerAddress = listingData ? listingData[0] : "";
   const listingPrice = listingData ? formatUnits(listingData[1], 18) : "0";
   const isSeller = address && sellerAddress && address.toLowerCase() === sellerAddress.toLowerCase();
+  const nftOwned = userNftBalance ? Number(userNftBalance) > 0 : false;
 
   return (
     <div className="space-y-6">
@@ -120,7 +166,7 @@ export function StageMarketplace({ stage }) {
         <div className="flex items-center justify-between">
           <h4 className="font-bold text-sm text-white flex items-center gap-2">
             <Tag className="w-4 h-4 text-cyan-400" />
-            <span>Marketplace Order Book (AchievementNFT #1)</span>
+            <span>Marketplace Order Book (AchievementNFT #{tokenId})</span>
           </h4>
           <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
             isListingActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'
@@ -181,28 +227,54 @@ export function StageMarketplace({ stage }) {
               </div>
             </div>
 
-            <button
-              onClick={handleList}
-              disabled={!isConnected || isAwaitingSignature || isPendingBroadcast}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isAwaitingSignature ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin" />
-                  <span>Confirm listNFT() in Wallet...</span>
-                </>
-              ) : isPendingBroadcast ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin text-amber-300" />
-                  <span>Posting Listing to Arbitrum...</span>
-                </>
-              ) : (
-                <>
-                  <Tag className="w-4 h-4" />
-                  <span>Create Fixed-Price Listing ({listPrice} LUSD)</span>
-                </>
-              )}
-            </button>
+            {/* If Marketplace not approved, show Approve step */}
+            {!isApprovedForAll ? (
+              <button
+                onClick={handleApproveNFT}
+                disabled={!isConnected || isAwaitingSignature || isPendingBroadcast}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAwaitingSignature && actionType === 'approve' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Confirm NFT Approval in Wallet...</span>
+                  </>
+                ) : isPendingBroadcast && actionType === 'approve' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Confirming NFT Operator on Arbitrum...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Step 1: Approve Marketplace to Transfer NFT</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleList}
+                disabled={!isConnected || isAwaitingSignature || isPendingBroadcast}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAwaitingSignature && actionType === 'list' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin" />
+                    <span>Confirm listNFT() in Wallet...</span>
+                  </>
+                ) : isPendingBroadcast && actionType === 'list' ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin text-amber-300" />
+                    <span>Posting Listing to Arbitrum...</span>
+                  </>
+                ) : (
+                  <>
+                    <Tag className="w-4 h-4" />
+                    <span>Step 2: Create Fixed-Price Listing ({listPrice} LUSD)</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
 

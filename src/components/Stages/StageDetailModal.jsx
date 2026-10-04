@@ -32,10 +32,12 @@ import { StageStaking } from './StageStaking.jsx';
 import { StageAchievementNFT } from './StageAchievementNFT.jsx';
 import { StageMarketplace } from './StageMarketplace.jsx';
 import { StageSecurityLab } from './StageSecurityLab.jsx';
+import { StageLending } from './StageLending.jsx';
+import { StageBridge } from './StageBridge.jsx';
 import { StageGraduation } from './StageGraduation.jsx';
 
 export function StageDetailModal() {
-  const { activeStageId, closeStage, openStage, isStageCompleted, isStageUnlocked } = useLearning();
+  const { activeStageId, closeStage, openStage, isStageCompleted, isStageUnlocked, completeStage } = useLearning();
 
   if (!activeStageId) return null;
 
@@ -66,17 +68,30 @@ export function StageDetailModal() {
       case 'stage-11': return <StageAchievementNFT stage={stage} />;
       case 'stage-12': return <StageMarketplace stage={stage} />;
       case 'stage-13': return <StageSecurityLab stage={stage} />;
+      case 'stage-14': return <StageLending stage={stage} />;
+      case 'stage-15': return <StageBridge stage={stage} />;
       case 'stage-grad': return <StageGraduation stage={stage} />;
       default:
         return (
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-            <h4 className="font-bold text-white text-base">Advanced Exploration Preview</h4>
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4">
+            <h4 className="font-bold text-white text-base">{stage.title}</h4>
             <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
               {stage.description}
             </p>
-            <div className="p-4 rounded-xl bg-slate-950 font-mono text-xs text-cyan-300">
-              Module Status: Preview Stage for Advanced Cohort Curriculum
-            </div>
+            {completed ? (
+              <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-center gap-2 text-xs text-emerald-300 font-bold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Stage Completed (+{stage.xp} XP Earned)</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => completeStage(stage.id, { type: 'Completed Stage Reading' })}
+                className="py-3 px-6 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition-all inline-flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Complete Module & Claim +{stage.xp} XP</span>
+              </button>
+            )}
           </div>
         );
     }

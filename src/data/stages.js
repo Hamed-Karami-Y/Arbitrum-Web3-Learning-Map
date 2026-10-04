@@ -431,10 +431,10 @@ export const STAGES = [
     title: "Lending & Money Markets",
     tagline: "Collateralized borrowing, LTV, and liquidation health factors",
     category: "Advanced",
-    difficulty: "Coming Next",
+    difficulty: "Advanced",
     xp: 100,
     prerequisites: ["stage-13"],
-    type: "preview",
+    type: "interactive",
     description: "Explore how decentralized lending protocols (like Aave and Silo on Arbitrum) enable over-collateralized borrowing and interest yields.",
     lesson: {
       summary: "Users deposit crypto collateral to borrow other assets up to a strict Loan-to-Value (LTV) ratio. If collateral value drops, liquidators repay the loan to protect lenders.",
@@ -443,8 +443,8 @@ export const STAGES = [
         { term: "Health Factor", def: "Safety margin metric. Below 1.0 triggers automated liquidation." }
       ]
     },
-    task: "Advanced module: Review lending mechanics and protocol documentation.",
-    isCore: false,
+    task: "Simulate collateral deposit, borrow USDC, test the liquidation health factor, and complete the module.",
+    isCore: true,
   },
   {
     id: "stage-15",
@@ -453,10 +453,10 @@ export const STAGES = [
     title: "Arbitrum Nitro Bridge",
     tagline: "Cross-chain messaging, rollup inbox/outbox, and fraud proofs",
     category: "Advanced",
-    difficulty: "Coming Next",
+    difficulty: "Advanced",
     xp: 100,
-    prerequisites: ["stage-13"],
-    type: "preview",
+    prerequisites: ["stage-14"],
+    type: "interactive",
     description: "Understand the native Arbitrum bridge architecture: how tokens deposit via the L1 Inbox and withdraw through the 7-day dispute window Outbox.",
     lesson: {
       summary: "Arbitrum's native bridge uses cryptographic inbox and outbox contracts on Ethereum L1 to ensure trustless cross-chain state verification.",
@@ -465,8 +465,8 @@ export const STAGES = [
         { term: "Fast Liquidity Bridges", def: "Third-party protocols (Hop, Across) that provide instant liquidity for small fee premiums." }
       ]
     },
-    task: "Advanced module: Review bridge architecture and Arbitrum documentation.",
-    isCore: false,
+    task: "Simulate the cross-chain bridge lifecycle (L1 inbox and 7-day challenge outbox) and complete the module.",
+    isCore: true,
   },
 
   // ZONE 7 (Mainnet Graduation)

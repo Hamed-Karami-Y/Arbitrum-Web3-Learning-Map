@@ -69,6 +69,7 @@ export function StageAchievementNFT({ stage }) {
   }, [isConfirmed, txHash]);
 
   const handleMint = () => {
+    if (hasMintedOnchain) return;
     try {
       writeContract({
         address: CONTRACT_ADDRESSES.AchievementNFT,
@@ -76,6 +77,7 @@ export function StageAchievementNFT({ stage }) {
         functionName: 'mintAchievement',
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 220000n, // safe gas limit avoiding buggy wallet RPC eth_getBlockByNumber failures
       });
     } catch (e) {
       console.error(e);

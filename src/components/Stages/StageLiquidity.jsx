@@ -124,6 +124,7 @@ export function StageLiquidity({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amountA || "100", 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -141,6 +142,7 @@ export function StageLiquidity({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amountB || "100", 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -159,6 +161,7 @@ export function StageLiquidity({ stage }) {
         args: [parseUnits(amountA, 18), parseUnits(amountB, 18), 1n],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 250000n,
       });
     } catch (e) {
       console.error(e);

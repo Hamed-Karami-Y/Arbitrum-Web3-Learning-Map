@@ -2,17 +2,21 @@
 // Centralized chain configuration for Arbitrum Sepolia & fallback environments
 
 import { parseGwei } from 'viem';
+import { arbitrumSepolia as viemArbitrumSepolia, arbitrum as viemArbitrum } from 'viem/chains';
 
 export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
 
-// Safe gas fee parameters for Arbitrum Sepolia
-// Ensures transactions are never rejected by the Arbitrum Nitro sequencer due to baseFee spikes
+// Safe gas fee and gas limit parameters for Arbitrum Sepolia
+// Bypasses buggy inpage wallet RPC calls (eth_getBlockByNumber / eth_estimateGas)
+// while ensuring transactions are never rejected by the Arbitrum Nitro sequencer
 export const ARBITRUM_SAFE_FEES = {
-  maxFeePerGas: parseGwei('0.25'), // 0.25 Gwei (250,000,000 wei) - ample headroom above ~0.05 Gwei base fee
-  maxPriorityFeePerGas: parseGwei('0.02'), // 0.02 Gwei (20,000,000 wei)
+  maxFeePerGas: parseGwei('0.25'), // 0.25 Gwei (ample headroom above ~0.05 Gwei base fee)
+  maxPriorityFeePerGas: parseGwei('0.02'), // 0.02 Gwei
+  gas: 250000n, // safe gas limit (unused gas is refunded by EVM)
 };
 
 export const arbitrumSepolia = {
+  ...viemArbitrumSepolia,
   id: ARBITRUM_SEPOLIA_CHAIN_ID,
   name: 'Arbitrum Sepolia',
   network: 'arbitrum-sepolia',
@@ -41,24 +45,12 @@ export const arbitrumSepolia = {
       url: import.meta.env.VITE_EXPLORER_BASE_URL || 'https://sepolia.arbiscan.io',
     },
   },
-  fees: {
-    estimateFeesPerGas: async ({ block }) => {
-      const baseFee = block?.baseFeePerGas || 50000000n;
-      // 2x buffer over base fee with a safe minimum floor of 0.25 Gwei
-      const calculated = (baseFee * 200n) / 100n;
-      const minCap = parseGwei('0.25');
-      const maxFeePerGas = calculated > minCap ? calculated : minCap;
-      return {
-        maxFeePerGas,
-        maxPriorityFeePerGas: parseGwei('0.02'),
-      };
-    },
-  },
   testnet: true,
 };
 
 // Mainnet reference for graduation curriculum
 export const arbitrumOne = {
+  ...viemArbitrum,
   id: 42161,
   name: 'Arbitrum One',
   network: 'arbitrum-one',

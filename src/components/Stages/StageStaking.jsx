@@ -108,6 +108,7 @@ export function StageStaking({ stage }) {
         args: [CONTRACT_ADDRESSES.StakingLab, parseUnits(stakeAmount, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -127,6 +128,7 @@ export function StageStaking({ stage }) {
         args: [parseUnits(stakeAmount, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 220000n,
       });
     } catch (e) {
       console.error(e);
@@ -143,6 +145,7 @@ export function StageStaking({ stage }) {
         functionName: 'claimReward',
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 150000n,
       });
     } catch (e) {
       console.error(e);
@@ -161,6 +164,7 @@ export function StageStaking({ stage }) {
         args: [stakeInfo[0]],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 220000n,
       });
     } catch (e) {
       console.error(e);

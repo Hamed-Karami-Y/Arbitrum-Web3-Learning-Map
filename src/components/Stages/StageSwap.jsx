@@ -152,6 +152,7 @@ export function StageSwap({ stage }) {
         args: [parseUnits(amountIn, 18), minAmountOutBN],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 220000n,
       });
     } catch (e) {
       console.error(e);
@@ -170,6 +171,7 @@ export function StageSwap({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amt, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -187,6 +189,7 @@ export function StageSwap({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amt, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -204,6 +207,7 @@ export function StageSwap({ stage }) {
         args: [parseUnits(amtA, 18), parseUnits(amtB, 18), 1n],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 250000n,
       });
     } catch (e) {
       console.error(e);

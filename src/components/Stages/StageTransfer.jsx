@@ -75,6 +75,7 @@ export function StageTransfer({ stage }) {
         args: [recipient, parseUnits(amount, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);

@@ -6,25 +6,17 @@ import path from 'path';
 async function main() {
   console.log("🚀 Deploying Arbitrum Web3 Learning Map contracts to Arbitrum Sepolia...");
 
-  // In Hardhat / Viem environment:
-  // 1. Deploy LearnToken (LEARN)
-  // 2. Deploy LearnUSD (LUSD)
-  // 3. Deploy SimpleAMM with LEARN and LUSD
-  // 4. Deploy StakingLab with LEARN
-  // 5. Deploy AchievementNFT
-  // 6. Deploy SimpleMarketplace with AchievementNFT and LUSD
-
   const deploymentData = {
     network: "Arbitrum Sepolia",
     chainId: 421614,
     timestamp: new Date().toISOString(),
     contracts: {
-      LearnToken: process.env.LEARN_TOKEN_ADDRESS || "0x91F70B16CDE8B51E397F3d321526b7AcB50d8929",
-      LearnUSD: process.env.LEARN_USD_ADDRESS || "0x438A4B69E8e473A759905c9354F915c234aEc5a2",
-      SimpleAMM: process.env.SIMPLE_AMM_ADDRESS || "0x6962327D373Bce02ff7a1B3aF75d401340156Ac4",
-      StakingLab: process.env.STAKING_LAB_ADDRESS || "0x53E7f12e84d2629b3c4B5A5C7094d45543c7B652",
-      AchievementNFT: process.env.ACHIEVEMENT_NFT_ADDRESS || "0x7877c442436dF06b99C7fdf13192078652d8b598",
-      SimpleMarketplace: process.env.MARKETPLACE_ADDRESS || "0x12FaC9E5EbD5F8b4bcf9D1B994F809A7659E4413"
+      LearnToken: process.env.LEARN_TOKEN_ADDRESS || "0x5A70463e6b42f5D9c05D2a31CAc2b1717F25D711",
+      LearnUSD: process.env.LEARN_USD_ADDRESS || "0xE0323075E027A865bF8E800421493d6444535aae",
+      SimpleAMM: process.env.SIMPLE_AMM_ADDRESS || "0x599f6cB50dA80944f6D1ea59846886F5247ffB31",
+      StakingLab: process.env.STAKING_LAB_ADDRESS || "0x4fb795D9fE7625ccf1525f9c2Fc31e61d3Aeb206",
+      AchievementNFT: process.env.ACHIEVEMENT_NFT_ADDRESS || "0x29a9DD16831280E978822a3ba0a50f18aCEF3332",
+      SimpleMarketplace: process.env.MARKETPLACE_ADDRESS || "0x9Cce35F6B0D73210266A41E9DF0d4eb7De96799B"
     }
   };
 

@@ -98,6 +98,7 @@ export function StageMarketplace({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleMarketplace, true],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
@@ -115,6 +116,7 @@ export function StageMarketplace({ stage }) {
         args: [BigInt(tokenId), parseUnits(listPrice, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 200000n,
       });
     } catch (e) {
       console.error(e);
@@ -132,6 +134,7 @@ export function StageMarketplace({ stage }) {
         args: [BigInt(tokenId)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);

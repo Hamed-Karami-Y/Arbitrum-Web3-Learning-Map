@@ -22,7 +22,7 @@ import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageERC20({ stage }) {
   const { address, isConnected } = useAccount();
-  const { completeStage, isStageCompleted } = useLearning();
+  const { completeStage, isStageCompleted, openStage } = useLearning();
   const completed = isStageCompleted(stage.id);
 
   // Read Token Balance
@@ -40,6 +40,17 @@ export function StageERC20({ stage }) {
     functionName: 'hasClaimed',
     args: address ? [address] : undefined,
   });
+
+  // Auto-complete stage if already claimed onchain or user has >= 1000 LEARN
+  useEffect(() => {
+    if ((hasClaimedOnchain || (balance && balance >= 1000000000000000000000n)) && !completed) {
+      completeStage(stage.id, {
+        type: "Claim 1,000 LEARN",
+        amount: "1,000 LEARN",
+        status: "Confirmed"
+      });
+    }
+  }, [hasClaimedOnchain, balance, completed]);
 
   // Write claimFaucet
   const { 
@@ -80,6 +91,7 @@ export function StageERC20({ stage }) {
         functionName: 'claimFaucet',
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 150000n,
       });
     } catch (e) {
       console.error(e);
@@ -148,16 +160,28 @@ export function StageERC20({ stage }) {
         {/* Claim Action */}
         <div className="pt-2">
           {userHasTokens ? (
-            <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-emerald-300 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>You have claimed your 1,000 LEARN allocation!</span>
+            <div className="space-y-3">
+              <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-emerald-300 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>You have claimed your 1,000 LEARN allocation!</span>
+                </div>
+                {!completed && (
+                  <button
+                    onClick={() => completeStage(stage.id)}
+                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all shrink-0"
+                  >
+                    Mark Complete (+100 XP)
+                  </button>
+                )}
               </div>
+
               <button
-                onClick={() => completeStage(stage.id)}
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all"
+                onClick={() => openStage('stage-6')}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                Mark Complete (+100 XP)
+                <span>Continue to Stage 6: Transferring Value</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
               </button>
             </div>
           ) : (

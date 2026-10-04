@@ -1,6 +1,7 @@
 // src/config/contracts.js
 // Centralized contract registry and helpers for Arbitrum Web3 Learning Map
 
+import { getAddress } from 'viem';
 import { LearnTokenABI } from '../contracts/abis/LearnTokenABI.js';
 import { LearnUSDABI } from '../contracts/abis/LearnUSDABI.js';
 import { SimpleAMMABI } from '../contracts/abis/SimpleAMMABI.js';
@@ -8,14 +9,45 @@ import { StakingLabABI } from '../contracts/abis/StakingLabABI.js';
 import { AchievementNFTABI } from '../contracts/abis/AchievementNFTABI.js';
 import { SimpleMarketplaceABI } from '../contracts/abis/SimpleMarketplaceABI.js';
 
-// Verified Arbitrum Sepolia deployed testnet addresses (overridable via Vite env)
+// Safe address normalizer: guarantees valid EIP-55 checksums regardless of env var casing
+const safeAddress = (envAddr, defaultAddr) => {
+  const candidate = (envAddr || defaultAddr || '').trim();
+  if (/^0x[0-9a-fA-F]{40}$/.test(candidate)) {
+    try {
+      return getAddress(candidate.toLowerCase());
+    } catch {
+      // ignore
+    }
+  }
+  return getAddress(defaultAddr.toLowerCase());
+};
+
+// Verified Arbitrum Sepolia deployed testnet addresses
 export const CONTRACT_ADDRESSES = {
-  LearnToken: import.meta.env.VITE_LEARN_TOKEN_ADDRESS || '0x91F70B16CDE8B51E397F3d321526b7AcB50d8929',
-  LearnUSD: import.meta.env.VITE_LEARN_USD_ADDRESS || '0x438A4B69E8e473A759905c9354F915c234aEc5a2',
-  SimpleAMM: import.meta.env.VITE_SIMPLE_AMM_ADDRESS || '0x6962327D373Bce02ff7a1B3aF75d401340156Ac4',
-  StakingLab: import.meta.env.VITE_STAKING_LAB_ADDRESS || '0x53E7f12e84d2629b3c4B5A5C7094d45543c7B652',
-  AchievementNFT: import.meta.env.VITE_ACHIEVEMENT_NFT_ADDRESS || '0x7877c442436dF06b99C7fdf13192078652d8b598',
-  SimpleMarketplace: import.meta.env.VITE_MARKETPLACE_ADDRESS || '0x12FaC9E5EbD5F8b4bcf9D1B994F809A7659E4413',
+  LearnToken: safeAddress(
+    import.meta.env.VITE_LEARN_TOKEN_ADDRESS,
+    '0x5A70463e6b42f5D9c05D2a31CAc2b1717F25D711'
+  ),
+  LearnUSD: safeAddress(
+    import.meta.env.VITE_LEARN_USD_ADDRESS,
+    '0xE0323075E027A865bF8E800421493d6444535aae'
+  ),
+  SimpleAMM: safeAddress(
+    import.meta.env.VITE_SIMPLE_AMM_ADDRESS,
+    '0x599f6cB50dA80944f6D1ea59846886F5247ffB31'
+  ),
+  StakingLab: safeAddress(
+    import.meta.env.VITE_STAKING_LAB_ADDRESS,
+    '0x4fb795D9fE7625ccf1525f9c2Fc31e61d3Aeb206'
+  ),
+  AchievementNFT: safeAddress(
+    import.meta.env.VITE_ACHIEVEMENT_NFT_ADDRESS,
+    '0x29a9DD16831280E978822a3ba0a50f18aCEF3332'
+  ),
+  SimpleMarketplace: safeAddress(
+    import.meta.env.VITE_MARKETPLACE_ADDRESS,
+    '0x9Cce35F6B0D73210266A41E9DF0d4eb7De96799B'
+  ),
 };
 
 export const CONTRACT_ABIS = {

@@ -11,7 +11,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Sparkles,
-  Layers
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import { useLearning } from '../../context/LearningContext.jsx';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS, getExplorerAddressUrl } from '../../config/contracts.js';
@@ -20,7 +21,7 @@ import { ARBITRUM_SAFE_FEES } from '../../config/chain.js';
 
 export function StageAchievementNFT({ stage }) {
   const { address, isConnected } = useAccount();
-  const { completeStage, isStageCompleted } = useLearning();
+  const { completeStage, isStageCompleted, openStage } = useLearning();
   const completed = isStageCompleted(stage.id);
 
   // Read hasMinted
@@ -38,6 +39,16 @@ export function StageAchievementNFT({ stage }) {
     functionName: 'userTokenId',
     args: address ? [address] : undefined,
   });
+
+  // Auto-complete stage if already minted onchain
+  useEffect(() => {
+    if (hasMintedOnchain && !completed) {
+      completeStage(stage.id, {
+        type: `Verified Onchain Milestone Badge`,
+        status: "Confirmed"
+      });
+    }
+  }, [hasMintedOnchain, completed]);
 
   // Mint contract write
   const { 
@@ -128,7 +139,7 @@ export function StageAchievementNFT({ stage }) {
         </div>
 
         {/* Badge Metadata Details */}
-        <div className="flex-1 space-y-3 text-xs">
+        <div className="flex-1 space-y-3 text-xs w-full">
           <div>
             <div className="text-base font-bold text-white">Arbitrum Web3 Foundations</div>
             <p className="text-slate-400 text-xs mt-0.5">
@@ -155,14 +166,32 @@ export function StageAchievementNFT({ stage }) {
             </div>
           </div>
 
-          {/* Mint Button */}
+          {/* Mint Button or Next Stage Navigation */}
           <div className="pt-2">
             {isMinted ? (
-              <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-emerald-300 font-bold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Achievement Badge Minted to your Address!</span>
+              <div className="space-y-2.5">
+                <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-emerald-300 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Achievement Badge Minted to your Address!</span>
+                  </div>
+                  {!completed && (
+                    <button
+                      onClick={() => completeStage(stage.id, { type: "Confirmed Mint", status: "Confirmed" })}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all shrink-0"
+                    >
+                      Claim +250 XP
+                    </button>
+                  )}
                 </div>
+
+                <button
+                  onClick={() => openStage('stage-12')}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Continue to Stage 12: NFT Marketplace</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <button
@@ -211,11 +240,14 @@ export function StageAchievementNFT({ stage }) {
       {/* Footer XP indicator */}
       <div className="pt-2 flex items-center justify-between text-xs">
         <span className="text-slate-400">Reward: <strong className="text-amber-400 font-mono">+{stage.xp} XP</strong></span>
-        {completed && (
-          <span className="text-emerald-400 font-mono font-bold flex items-center gap-1">
+        {isMinted && (
+          <button
+            onClick={() => openStage('stage-12')}
+            className="text-emerald-400 hover:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
             <CheckCircle2 className="w-4 h-4" />
-            <span>Unlocked Stage 12: NFT Marketplace</span>
-          </span>
+            <span>Proceed to Stage 12: NFT Marketplace →</span>
+          </button>
         )}
       </div>
 

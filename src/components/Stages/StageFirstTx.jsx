@@ -68,6 +68,7 @@ export function StageFirstTx({ stage }) {
         value: parseEther(amount),
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 30000n,
       });
       setTxSubmitted(true);
     } catch (e) {

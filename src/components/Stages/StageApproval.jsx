@@ -74,6 +74,7 @@ export function StageApproval({ stage }) {
         args: [CONTRACT_ADDRESSES.SimpleAMM, parseUnits(amountToApprove, 18)],
         maxFeePerGas: ARBITRUM_SAFE_FEES.maxFeePerGas,
         maxPriorityFeePerGas: ARBITRUM_SAFE_FEES.maxPriorityFeePerGas,
+        gas: 100000n,
       });
     } catch (e) {
       console.error(e);
